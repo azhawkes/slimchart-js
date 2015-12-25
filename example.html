@@ -1,0 +1,56 @@
+<html>
+  <head>
+    <script src="slimchart.js"></script>
+    <script>
+      //<!--
+
+    // The data you feed the chart should be structured like this...
+    var data = {
+        "labels" : [ 0, 1, 2, 3, 4, 5 ],
+        "datasets" : [
+            {
+                "color": "#bb3900",
+                "data" : [ 1, 0.4, 1.5, 4.2, 3.1, 2.0 ]
+            },
+            {
+                "color": "#eadc00",
+                "data" : [ 2, 1.4, 2.5, 1.2, 8.1, 3.4 ]
+            }
+        ]
+    };
+
+    // Create the chart with custom options...
+    function draw() {
+        new SlimChart({
+            yAxisMin: 0,
+            datasetColorPicker: function (dataset) {
+                return dataset.color;
+            },
+            canvas: document.getElementById('canvas')
+        }).draw(data);
+    }
+
+//-->
+    </script>
+
+    <style>
+
+      #canvas {
+        border: none;
+        width: 800px;
+        height: 400px;
+        background: #ffffff;
+      }
+
+      body {
+        text-align: center;
+        background: #ffffff;
+      }
+
+    </style>
+  </head>
+
+  <body onload="draw()">
+    <canvas id="canvas" width="800" height="400"></canvas>
+  </body>
+</html>
