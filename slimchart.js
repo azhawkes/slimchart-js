@@ -1,42 +1,55 @@
+//
+// Usage:
+//
+// var config = {
+//     canvas: document.getElementById('myCanvas')
+// };
+//
+// var data = {
+//     labels: ["Jan", "Feb", "Mar"],
+//     datasets: [
+//         {
+//             data: [3.5, 12.2, 6.8]
+//         },
+//         {
+//             data: [5.4, 9.9, 4.6]
+//         }
+//     ]
+// };
+//
+// new SlimChart(config).draw(data);
+//
 function SlimChart(config) {
     var self = this;
 
-    self.config = {
-        axisLineWidth: config.axisLineWidth || 1,
-        axisLineColor: config.axisLineColor || "#000000",
-        axisTextColor: config.axisTextColor || "#000000",
-        xAxisFormatter: config.xAxisFormatter || function (val) {
-            return val;
-        },
-        yAxisFormatter: config.yAxisFormatter || function (value, max) {
-            if (value == 0) {
-                return "";
-            } else if (max <= .1) {
-                return value.toFixed(2);
-            } else if (max <= 1) {
-                return value.toFixed(1);
-            } else if (max <= 10) {
-                return value.toFixed(1);
-            } else {
-                return value.toFixed(0);
-            }
-        },
-        yAxisMin: config.yAxisMin,
-        yAxisMax: config.yAxisMax,
-        yAxisSteps: config.yAxisSteps || 5,
-        datasetLineWidth: config.datasetLineWidth || 2,
-        datasetColorPicker: config.datasetColorPicker || function (dataset) { 
-            return '#' + Math.floor(Math.random()*16777215).toString(16);
-        },
-        canvas: config.canvas
+    // 
+    // Override these default configuration parameters yourself
+    // 
+    self.initialize = function (config) {
+        self.config = {
+            canvas: config.canvas, // required - a canvas element
+            axisLineWidth: config.axisLineWidth || 1,
+            axisLineColor: config.axisLineColor || "#000000",
+            axisTextColor: config.axisTextColor || "#000000",
+            xAxisFormatter: config.xAxisFormatter || self.defaultXAxisFormatter,
+            yAxisFormatter: config.yAxisFormatter || self.defaultYAxisFormatter,
+            yAxisMin: config.yAxisMin,
+            yAxisMax: config.yAxisMax,
+            yAxisSteps: config.yAxisSteps || 5,
+            datasetLineWidth: config.datasetLineWidth || 2,
+            datasetColorPicker: config.datasetColorPicker || self.defaultColorPicker
+        };
+
+        if (self.config.canvas instanceof HTMLCanvasElement) {
+            self.config.context = canvas.getContext('2d');
+        } else {
+            throw new Error("canvas is not an element");
+        }
     };
 
-    if (self.config.canvas instanceof HTMLCanvasElement) {
-        self.config.context = canvas.getContext('2d');
-    } else {
-        throw new Error("canvas is not an element");
-    }
-
+    //
+    // Draws (or redraws) the chart; this can safely be called again with new data
+    //
     self.draw = function (data) {
         self.clear();
         self.validateData(data);
@@ -51,8 +64,11 @@ function SlimChart(config) {
         var end = new Date().getTime();
 
         console.log("drawn in " + (end - start));
-    }
+    };
 
+    //
+    // Analyzes chart data to compute maximum and minimum
+    //
     self.analyzeData = function (data) {
         var config = self.config;
         var ctx = config.context;
@@ -89,8 +105,11 @@ function SlimChart(config) {
         }
 
         config.xStep = (config.graphArea.right - config.graphArea.left) / data.labels.length;
-    }
+    };
 
+    //
+    // Draws the x-axis, y-axis, and labels
+    //
     self.drawAxes = function (data) {
         var config = self.config;
         var ctx = config.context;
@@ -145,8 +164,11 @@ function SlimChart(config) {
         }
 
         ctx.translate(0, 0);
-    }
+    };
 
+    //
+    // Draws a line showing values for each dataset
+    //
     self.drawDatasets = function (data) {
         var config = self.config;
         var ctx = config.context;
@@ -174,8 +196,11 @@ function SlimChart(config) {
 
             ctx.stroke();
         });
-    }
+    };
 
+    //
+    // Scales the canvas for retina devices
+    //
     self.scaleForRetina = function () {
         var ctx = self.config.context;
         var width = ctx.canvas.width;
@@ -188,13 +213,20 @@ function SlimChart(config) {
             ctx.canvas.width = width * window.devicePixelRatio;
             ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
         }
-    }
+    };
 
+    //
+    // Clears the canvas
+    //
     self.clear = function () {
         self.config.context.clearRect(0, 0, self.config.canvas.width, self.config.canvas.height);
-    }
+    };
 
     
+    //
+    // Calculates the graph ceiling for the y-axis (allowing for a nice round
+    // number as the maximum)
+    //
     self.calculateYAxisCeiling = function (value) {
         var steps = self.config.yAxisSteps;
         var magnitude = Math.floor(Math.log(value) / Math.LN10);
@@ -202,8 +234,11 @@ function SlimChart(config) {
         var stepSize = multiplier * Math.ceil(value / steps / multiplier);
 
         return stepSize * steps;
-    }
+    };
 
+    //
+    // Validates the chart data has the bare minimum
+    //
     self.validateData = function (data) {
         if (!data) {
             throw new Error("data is required");
@@ -212,5 +247,38 @@ function SlimChart(config) {
         } else if (!Array.isArray(data.datasets)) {
             throw new Error("data.datasets must be an array");
         }
-    }
+    };
+
+    //
+    // Default x-axis formatter that returns the literal value
+    //
+    self.defaultXAxisFormatter = function (val) {
+        return val;
+    };
+
+    //
+    // Default y-axis formatter that shows a reasonable amount of precision
+    //
+    self.defaultYAxisFormatter = function (value, max) {
+        if (value == 0) {
+            return "";
+        } else if (max <= 0.1) {
+            return value.toFixed(2);
+        } else if (max <= 1) {
+            return value.toFixed(1);
+        } else if (max <= 10) {
+            return value.toFixed(1);
+        } else {
+            return value.toFixed(0);
+        }
+    };
+
+    //
+    // Default color picker that picks a random color per dataset
+    //
+    self.defaultColorPicker = function (dataset) { 
+        return '#' + Math.floor(Math.random() * 16777215).toString(16);
+    };
+
+    self.initialize(config);
 }
