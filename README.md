@@ -13,7 +13,7 @@ I wrote this because (surprisingly) I couldn't find a great open source chart li
 
 ## Examples
 
-Take a look at [example.html](example.html) if you're interested.
+Take a look at [example.html](https://htmlpreview.github.io/?https://github.com/azhawkes/slimchart-js/blob/master/example.html) if you're interested.
 
 ## Usage
 
