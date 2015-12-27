@@ -40,6 +40,8 @@
     function draw() {
       var datasets = document.getElementById('datasets').value;
       var datapoints = document.getElementById('datapoints').value;
+      var smooth = document.getElementById('smooth').checked;
+      var tension = document.getElementById('tension').value;
       var chart = new SlimChart({
             yAxisMin: 0,
             xAxisFormatter: function (val) {
@@ -49,6 +51,8 @@
                   return "";
                 }
             },
+            smooth: smooth,
+            tension: tension,
             canvas: document.getElementById('canvas')
       });
       var data = buildRandomChartData(datasets, datapoints);
@@ -88,7 +92,7 @@
       }
 
       form {
-        text-align: center;
+        padding: 20px 50px;
       }
 
       input[type=text] {
@@ -104,17 +108,26 @@
       <h1>SlimChart Example</h1>
       <p>
         This example plots multiple series of random data. For fun, you can 
-        keep refreshing this page to see different lines. View source or 
+        keep refreshing this chart to see different lines. View source or 
         check out README.md to see how it works.
       </p>
       <canvas id="canvas" width="800" height="400"></canvas>
       <form onsubmit="return draw()">
-        Plot 
-        <input id="datasets" type="text" value="3"/> 
-        random series of
-        <input id="datapoints" type="text" value="1000"/> 
-        datapoints each.
-        <input type="submit" value="Go!"/>
+        <p>
+          Generate
+          <input id="datasets" type="text" value="3"/> 
+          random series of
+          <input id="datapoints" type="text" value="100"/> 
+          datapoints each.
+        </p>
+        <p>
+          <input id="smooth" type="checkbox" checked/> 
+          Enable smoothing with tension of 
+          <input id="tension" type="text" value="4"/>
+        </p>
+        <p>
+          <input type="submit" value="Render It!"/>
+        </p>
       </form>
     </div>
   </body>

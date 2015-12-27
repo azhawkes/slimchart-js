@@ -37,7 +37,9 @@ function SlimChart(config) {
             yAxisMax: config.yAxisMax,
             yAxisSteps: config.yAxisSteps || 5,
             datasetLineWidth: config.datasetLineWidth || 2,
-            datasetColorPicker: config.datasetColorPicker || self.defaultColorPicker
+            datasetColorPicker: config.datasetColorPicker || self.defaultColorPicker,
+            smooth: config.smooth || false,
+            tension: config.tension || 4
         };
 
         if (self.config.canvas instanceof HTMLCanvasElement) {
@@ -182,16 +184,32 @@ function SlimChart(config) {
             ctx.strokeStyle = config.datasetColorPicker(dataset);
             ctx.beginPath();
 
+            var lastX;
+            var lastY;
+
             dataset.data.forEach(function (val, i) {
                 var ratio = (val - config.yAxisMin) / (config.yAxisMax - config.yAxisMin);
-                var x = g.left + (i * config.xStep);
-                var y = g.bottom - (height * ratio);
+                var x = Math.round(g.left + (i * config.xStep));
+                var y = Math.round(g.bottom - (height * ratio));
 
                 if (i == 0) {
                     ctx.moveTo(x, y);
                 } else {
-                    ctx.lineTo(x, y);
+                    if (self.config.smooth) {
+                        var deltaX = x - lastX;
+                        var deltaY = y - lastY;
+                        var midpointX = Math.round(lastX + (deltaX / 2));
+                        var midpointY = Math.round(lastY + (deltaY / 2));
+
+                        ctx.quadraticCurveTo(lastX + Math.round(deltaX / self.config.tension), lastY, midpointX, midpointY);
+                        ctx.quadraticCurveTo(x - Math.round(deltaX / self.config.tension), y, x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
                 }
+
+                lastX = x;
+                lastY = y;
             });
 
             ctx.stroke();
