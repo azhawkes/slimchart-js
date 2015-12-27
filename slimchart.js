@@ -43,7 +43,7 @@ function SlimChart(config) {
         };
 
         if (self.config.canvas instanceof HTMLCanvasElement) {
-            self.config.context = canvas.getContext('2d');
+            self.config.context = self.config.canvas.getContext('2d');
         } else {
             throw new Error("canvas is not an element");
         }
@@ -74,8 +74,13 @@ function SlimChart(config) {
     self.analyzeData = function (data) {
         var config = self.config;
         var ctx = config.context;
-        var w = ctx.canvas.clientWidth;
-        var h = ctx.canvas.clientHeight;
+        var w = ctx.canvas.width;
+        var h = ctx.canvas.height;
+
+        if (window.devicePixelRatio) {
+            w = w / window.devicePixelRatio;
+            h = h / window.devicePixelRatio;
+        }
 
         config.graphArea = {
             left: 50,
