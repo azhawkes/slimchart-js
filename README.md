@@ -13,7 +13,7 @@ I wrote this because (surprisingly) I couldn't find a great open source chart li
 
 ## Examples
 
-Take a look at [example.js](example.js) if you're interested.
+Take a look at [example.html](example.html) if you're interested.
 
 ## Usage
 
