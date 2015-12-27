@@ -52,3 +52,5 @@ There are a number of custom options you can pass in the ```config``` object:
 * **yAxisSteps** - The number of step lines to show on the Y axis (the default is 5).
 * **datasetLineWidth** - The width of the plotted line for each dataset.
 * **datasetColorPicker** - A JavaScript function to let you assign colors for each data set. The default is to pick a random color.
+* **smooth** - Whether or not the chart should use quadratic curves to smooth the lines. Defaults to false.
+* **tension** - How tight the curves should be, if smoothing is enabled. Defaults to 4.
