@@ -163,7 +163,7 @@ function SlimChart(config) {
             ctx.fillText(t, x - 8, y);
         }
 
-        ctx.translate(0, 0);
+        ctx.translate(-0.5, -0.5);
     };
 
     //
