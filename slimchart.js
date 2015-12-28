@@ -36,6 +36,7 @@ function SlimChart(config) {
             yAxisMin: config.yAxisMin,
             yAxisMax: config.yAxisMax,
             yAxisSteps: config.yAxisSteps || 5,
+            yAxisStepLineColor: config.yAxisStepLineColor || "rgba(0, 0, 0, 0)",
             datasetLineWidth: config.datasetLineWidth || 2,
             datasetColorPicker: config.datasetColorPicker || self.defaultColorPicker,
             datasetPointSizePicker: config.datasetPointSizePicker || self.defaultPointSizePicker,
@@ -63,8 +64,8 @@ function SlimChart(config) {
 
         self.scaleForRetina();
         self.analyzeData(data);
-        self.drawDatasets(data);
         self.drawAxes(data);
+        self.drawDatasets(data);
 
         var end = new Date().getTime();
 
@@ -134,12 +135,37 @@ function SlimChart(config) {
         ctx.translate(0.5, 0.5);
         ctx.lineWidth = config.axisLineWidth;
         ctx.strokeStyle = config.axisLineColor;
-        ctx.beginPath();
-        ctx.moveTo(g.left, g.top);
-        ctx.lineTo(g.left, g.bottom);
-        ctx.lineTo(g.right, g.bottom);
-        ctx.stroke();
         ctx.fillStyle = config.axisTextColor;
+
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'end';
+
+        var yStep = (g.bottom - g.top) / config.yAxisSteps;
+
+        for (var i = 0; i <= config.yAxisSteps; i++) {
+            var x = g.left;
+            var y = g.top + (i * yStep);
+            var range = calculations.yAxisMax - calculations.yAxisMin;
+            var v = calculations.yAxisMax - (i / config.yAxisSteps) * range;
+            var t = config.yAxisFormatter(v, calculations.yAxisMax);
+
+            if (config.yAxisStepLineColor) {
+                ctx.strokeStyle = config.yAxisStepLineColor;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(g.right, y);
+                ctx.stroke();
+            }
+
+            ctx.strokeStyle = config.axisLineColor;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - 5, y);
+            ctx.stroke();
+
+            ctx.fillText(t, x - 8, y);
+        }
+
         ctx.textBaseline = 'top';
         ctx.textAlign = 'center';
 
@@ -158,25 +184,11 @@ function SlimChart(config) {
             }
         }
 
-        ctx.textBaseline = 'middle';
-        ctx.textAlign = 'end';
-
-        var yStep = (g.bottom - g.top) / config.yAxisSteps;
-
-        for (var i = 0; i <= config.yAxisSteps; i++) {
-            var x = g.left;
-            var y = g.top + (i * yStep);
-            var range = calculations.yAxisMax - calculations.yAxisMin;
-            var v = calculations.yAxisMax - (i / config.yAxisSteps) * range;
-            var t = config.yAxisFormatter(v, calculations.yAxisMax);
-
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x - 5, y);
-            ctx.stroke();
-
-            ctx.fillText(t, x - 8, y);
-        }
+        ctx.beginPath();
+        ctx.moveTo(g.left, g.top);
+        ctx.lineTo(g.left, g.bottom);
+        ctx.lineTo(g.right, g.bottom);
+        ctx.stroke();
 
         ctx.translate(-0.5, -0.5);
     };

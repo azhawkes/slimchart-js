@@ -49,7 +49,8 @@ There are a number of custom options you can pass in the ```config``` object:
 * **yAxisFormatter** - A JavaScript function to format labels on the Y axis (see above).
 * **yAxisMin** - The minimum value for the Y axis. If not passed, it will be calculated.
 * **yAxisMax** - The maximum value for the X axis. If not passed, it will be calculated.
-* **yAxisSteps** - The number of step lines to show on the Y axis (the default is 5).
+* **yAxisSteps** - The number of steps to show on the Y axis (the default is 5).
+* **yAxisStepLineColor** - The color of the step lines on the Y axis (default is invisible).
 * **datasetLineWidth** - The width of the plotted line for each dataset.
 * **datasetColorPicker** - A JavaScript function to let you assign colors for each data set. The default is to pick a random color.
 * **datasetPointSizePicker** - A JavaScript function to let you assign a point size for each data point displayed on the data set. The default is 0 (no point markers).
