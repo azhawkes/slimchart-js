@@ -42,6 +42,8 @@ function SlimChart(config) {
             tension: config.tension || 4
         };
 
+        self.calculations = {};
+
         if (self.config.canvas instanceof HTMLCanvasElement) {
             self.config.context = self.config.canvas.getContext('2d');
         } else {
@@ -73,6 +75,7 @@ function SlimChart(config) {
     //
     self.analyzeData = function (data) {
         var config = self.config;
+        var calculations = self.calculations;
         var ctx = config.context;
         var w = ctx.canvas.width;
         var h = ctx.canvas.height;
@@ -82,36 +85,40 @@ function SlimChart(config) {
             h = h / window.devicePixelRatio;
         }
 
-        config.graphArea = {
+        calculations.graphArea = {
             left: 50,
             top: 10,
             bottom: h - 50,
             right: w
         };
 
-        if (typeof(config.yAxisMax) === 'undefined' || typeof(config.yAxisMin) === 'undefined') {
-            var yAxisMax = Number.MIN_VALUE;
-            var yAxisMin = Number.MAX_VALUE;
+        var yAxisMax = Number.MIN_VALUE;
+        var yAxisMin = Number.MAX_VALUE;
 
-            data.datasets.forEach(function(dataset) {
-                dataset.data.forEach(function(value) {
-                    yAxisMax = Math.max(yAxisMax, value);
-                    yAxisMin = Math.min(yAxisMin, value);
-                });
+        data.datasets.forEach(function (dataset) {
+            dataset.data.forEach(function (value) {
+                yAxisMax = Math.max(yAxisMax, value);
+                yAxisMin = Math.min(yAxisMin, value);
             });
+        });
 
-            if (typeof(config.yAxisMax) === 'undefined') {
-                config.yAxisMax = yAxisMax;
-            }
-
-            if (typeof(config.yAxisMin) === 'undefined') {
-                config.yAxisMin = yAxisMin;
-            }
-
-            config.yAxisMax = self.calculateYAxisCeiling(config.yAxisMax);
+        if (typeof(config.yAxisMax) !== 'undefined') {
+            calculations.yAxisMax = config.yAxisMax;
+        } else if (yAxisMax == Number.MIN_VALUE) {
+            calculations.yAxisMax = 100;
+        } else {
+            calculations.yAxisMax = self.calculateYAxisCeiling(yAxisMax);
         }
 
-        config.xStep = (config.graphArea.right - config.graphArea.left) / data.labels.length;
+        if (typeof(config.yAxisMin) !== 'undefined') {
+            calculations.yAxisMin = config.yAxisMin;
+        } else if (yAxisMin == Number.MAX_VALUE) {
+            calculations.yAxisMin = 0;
+        } else {
+            calculations.yAxisMin = yAxisMin;
+        }
+
+        calculations.xStep = (calculations.graphArea.right - calculations.graphArea.left) / data.labels.length;
     };
 
     //
@@ -119,8 +126,9 @@ function SlimChart(config) {
     //
     self.drawAxes = function (data) {
         var config = self.config;
+        var calculations = self.calculations;
         var ctx = config.context;
-        var g = config.graphArea;
+        var g = calculations.graphArea;
 
         ctx.translate(0.5, 0.5);
         ctx.lineWidth = config.axisLineWidth;
@@ -135,7 +143,7 @@ function SlimChart(config) {
         ctx.textAlign = 'center';
 
         for (var i = 0; i < data.labels.length; i++) {
-            var x = Math.round(g.left + (config.xStep * i));
+            var x = Math.round(g.left + (calculations.xStep * i));
             var y = g.bottom;
             var t = config.xAxisFormatter(data.labels[i]);
 
@@ -157,10 +165,9 @@ function SlimChart(config) {
         for (var i = 0; i <= config.yAxisSteps; i++) {
             var x = g.left;
             var y = g.top + (i * yStep);
-            var steps = config.yAxisSteps;
-            var range = config.yAxisMax - config.yAxisMin;
-            var v = config.yAxisMax - (i / config.yAxisSteps) * range;
-            var t = config.yAxisFormatter(v, config.yAxisMax);
+            var range = calculations.yAxisMax - calculations.yAxisMin;
+            var v = calculations.yAxisMax - (i / config.yAxisSteps) * range;
+            var t = config.yAxisFormatter(v, calculations.yAxisMax);
 
             ctx.beginPath();
             ctx.moveTo(x, y);
@@ -178,23 +185,23 @@ function SlimChart(config) {
     //
     self.drawDatasets = function (data) {
         var config = self.config;
+        var calculations = self.calculations;
         var ctx = config.context;
-        var g = config.graphArea;
-        var width = g.right - g.left;
+        var g = calculations.graphArea;
         var height = g.bottom - g.top;
-        var range = config.yAxisMax - config.yAxisMin;
 
         data.datasets.forEach(function (dataset) {
-            ctx.lineWidth = config.datasetLineWidth;
-            ctx.strokeStyle = config.datasetColorPicker(dataset);
-            ctx.beginPath();
-
             var lastX;
             var lastY;
 
+            ctx.lineWidth = config.datasetLineWidth;
+            ctx.strokeStyle = config.datasetColorPicker(dataset);
+            ctx.fillStyle = ctx.strokeStyle;
+            ctx.beginPath();
+
             dataset.data.forEach(function (val, i) {
-                var ratio = (val - config.yAxisMin) / (config.yAxisMax - config.yAxisMin);
-                var x = Math.round(g.left + (i * config.xStep));
+                var ratio = (val - config.yAxisMin) / (calculations.yAxisMax - config.yAxisMin);
+                var x = Math.round(g.left + (i * calculations.xStep));
                 var y = Math.round(g.bottom - (height * ratio));
 
                 if (i == 0) {
@@ -246,7 +253,7 @@ function SlimChart(config) {
         self.config.context.clearRect(0, 0, self.config.canvas.width, self.config.canvas.height);
     };
 
-    
+
     //
     // Calculates the graph ceiling for the y-axis (allowing for a nice round
     // number as the maximum)
@@ -287,7 +294,7 @@ function SlimChart(config) {
         if (value == 0) {
             return "";
         } else if (max <= 0.1) {
-            return value.toFixed(2);
+            return value.toFixed(3);
         } else if (max <= 1) {
             return value.toFixed(1);
         } else if (max <= 10) {
@@ -300,7 +307,7 @@ function SlimChart(config) {
     //
     // Default color picker that picks a random color per dataset
     //
-    self.defaultColorPicker = function (dataset) { 
+    self.defaultColorPicker = function (dataset) {
         return '#' + Math.floor(Math.random() * 16777215).toString(16);
     };
 
