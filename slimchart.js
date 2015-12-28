@@ -38,6 +38,7 @@ function SlimChart(config) {
             yAxisSteps: config.yAxisSteps || 5,
             datasetLineWidth: config.datasetLineWidth || 2,
             datasetColorPicker: config.datasetColorPicker || self.defaultColorPicker,
+            datasetPointSizePicker: config.datasetPointSizePicker || self.defaultPointSizePicker,
             smooth: config.smooth || false,
             tension: config.tension || 4
         };
@@ -191,6 +192,7 @@ function SlimChart(config) {
         var height = g.bottom - g.top;
 
         data.datasets.forEach(function (dataset) {
+            var pointSize = config.datasetPointSizePicker(dataset);
             var lastX;
             var lastY;
 
@@ -218,6 +220,10 @@ function SlimChart(config) {
                     } else {
                         ctx.lineTo(x, y);
                     }
+                }
+
+                if (pointSize) {
+                    ctx.fillRect(x - pointSize / 2, y - pointSize / 2, pointSize, pointSize);
                 }
 
                 lastX = x;
@@ -305,10 +311,17 @@ function SlimChart(config) {
     };
 
     //
-    // Default color picker that picks a random color per dataset
+    // Default dataset color picker that picks a random color per dataset
     //
     self.defaultColorPicker = function (dataset) {
         return '#' + Math.floor(Math.random() * 16777215).toString(16);
+    };
+
+    //
+    // Default dataset point size picker that returns 0 (no points shown)
+    //
+    self.defaultPointSizePicker = function (dataset) {
+        return 0;
     };
 
     self.initialize(config);
