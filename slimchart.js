@@ -283,9 +283,17 @@ function SlimChart(config) {
         var steps = self.config.yAxisSteps;
         var magnitude = Math.floor(Math.log(value) / Math.LN10);
         var multiplier = Math.pow(10, magnitude);
-        var stepSize = multiplier * Math.ceil(value / steps / multiplier);
+        var relative = value / multiplier;
 
-        return stepSize * steps;
+        if (relative < 2) {
+            return 2 * multiplier;
+        } else if (relative < 3) {
+            return 3 * multiplier;
+        } else if (relative < 5) {
+            return 5 * multiplier;
+        } else if (relative < 10) {
+            return 10 * multiplier;
+        }
     };
 
     //
