@@ -291,7 +291,7 @@ function SlimChart(config) {
             return 3 * multiplier;
         } else if (relative < 5) {
             return 5 * multiplier;
-        } else if (relative < 10) {
+        } else {
             return 10 * multiplier;
         }
     };
